@@ -1,8 +1,32 @@
 <template>
   <b-row>
     <b-col>
-      <h2 class="my-3">Situación Argentina</h2>
+      <h2 class="my-3">Predicción Argentina a 5 días</h2>
       <b-row>
+        <b-col>
+          <b-alert show variant="warning">
+            <p>Este modelo no contempla ni los casos recuperados ni las muertes. Apunta a predecir el crecimiento inicial de la pandemia.</p>  
+          </b-alert>          
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col>
+          <b-card title="Casos confirmados" class="text-center">
+            <b-card-text>
+              <h1>{{total_cases}}</h1>
+            </b-card-text>
+          </b-card>
+        </b-col>
+        <b-col>
+          <b-card title="Muertes confirmadas" class="text-center">
+            <b-card-text>
+              <h1>{{total_deaths}}</h1>
+            </b-card-text>
+          </b-card>
+        </b-col>
+        <b-col></b-col>
+      </b-row>
+      <b-row class="mt-3">
         <b-col>
           <line-chart
             :chart-data="chartdata"
@@ -31,36 +55,46 @@ export default {
   },
   data(){
     return{
-      start_date: "2020-03-04"
+      start_date: "2020-03-04",
+      days_to_predict: 5,
+      cases: [1,0,1,6,1,3,0,7,0,12,3,11,11,9,14,18,31,30,67,41,35,86,115,87,101,55,75,146],
+      deaths: [0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,0,2,2,4,5,2,1,4]
     }
   },
-  computed: {   
+  computed: {
+    total_cases: function(){
+      return this.getCases().slice(-1)[0]
+    },
+    total_deaths: function(){
+      return this.getDeaths().slice(-1)[0]
+    },
     chartdata: function(){
       return {
         labels: this.getDaysArray(this.startDate(), this.endDate()), // Días
-        datasets: [          
+        datasets: [
           {
-            type: 'bar',
-            label: 'infectados',
-            data: this.getCases(),
-            backgroundColor: 'rgba(99, 33, 132, 0.2)',
-            borderColor: 'rgba(255,99,132,1)',
-            borderWidth: 1
+            label: 'Predicción Infectados',
+            data: this.getForecast(),
+            backgroundColor: 'rgba(181, 13, 13, 0.08)',
+            borderColor: 'rgba(181, 13, 13, 1)',
+            borderWidth: 1,
+            order: 1
           },
           {
             type: 'bar',
             label: 'Muertes',
             data: this.getDeaths(),
-            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-            borderColor: 'rgba(255,99,132,1)',
-            borderWidth: 1
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            borderWidth: 1,
+            order: 2
           },
           {
-            label: 'Predicción Infectados',
-            data: new Array(this.daysBetweenStartEnd(this.startDate(), this.endDate())), // TODO: Calcular data en base a fórmula
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 1
+            type: 'bar',
+            label: 'infectados',
+            data: this.getCases(),
+            backgroundColor: 'rgba(255, 69, 0, 0.6)',
+            borderWidth: 1,
+            order: 3
           }
         ]
       }
@@ -80,7 +114,7 @@ export default {
           }],
           yAxes: [{
             display: true,
-            stacked: true,
+            stacked: false,
             scaleLabel: {
               display: true,
               labelString: 'Casos'
@@ -94,14 +128,80 @@ export default {
     }
   },
   mounted(){
-    //this.fillData()
+    this.getForecast();
   },
   methods: {
+    getGrowthFactor(offset){      
+      var cases = this.getCases().splice(offset);
+
+      var values = [];
+      let f;
+      for(var i = 0; i < cases.length; i++){
+        if(i > 0){
+          if(typeof cases[i-1] !== "undefined" && cases[i-1] > 0){
+            f = cases[i] / cases[i-1]
+            values.push(f);
+          }          
+        }
+      }
+
+      return this.getAvg(values);
+    },
+    getAvg(values){
+      let count = values.length;
+      values = values.reduce((previous, current) => current += previous);
+      values /= count;
+      
+      return values;
+    },
+    getForecast(){
+      var cases = this.getCases(); // D
+      var cases_count = cases.length;
+      var forecast_days = cases_count + this.days_to_predict;
+      var growth_factor = this.getGrowthFactor(1);
+
+      var i = 0;
+      let f = 1;          // Predicción
+      let last_f;         // Auxiliar para predicción anterior
+      var forecast = [];
+      while(i <= forecast_days){
+        if(i > 0){
+          if(typeof cases[i-1] === "undefined"){
+            last_f = forecast.slice(-1)[0] || 1;
+          }else{
+            last_f = cases[i-1];
+          }
+
+          f = growth_factor * last_f;
+          forecast.push(Math.round(f));
+        }
+
+        i++;
+      }
+
+      return forecast;
+    },
+    getSimulatedForecast(){
+      var days_num = this.daysBetweenStartEnd(this.startDate(), this.endDate());
+
+      var forecast = [];
+      for(var i = 0; i < days_num; i++){
+        forecast.push(i*i);
+      }
+
+      return forecast;
+    },
     getCases(){
-      return [1,0,1,6,1,3,0,7,0,12,3,11,11,9,14,18,31,30,67,41,35,86,115,87,101,55];
+      var values = this.cases;
+      var cases = values.reduce((r, a, i) => (r.push((i && r[i - 1] || 0) + a), r), []);
+
+      return cases;
     },
     getDeaths(){
-      return [0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,0,2,2,4,5,2];
+      var values = this.deaths;
+      var deaths = values.reduce((r, a, i) => (r.push((i && r[i - 1] || 0) + a), r), []);
+
+      return deaths;
     },
     today(){
       return new Date().toISOString().slice(0,10).split('-').reverse().join('/');
@@ -110,7 +210,7 @@ export default {
       return new Date(this.start_date);
     },
     endDate(){
-      return new Date(new Date().setDate(new Date().getDate()-1));
+      return new Date(new Date().setDate(new Date().getDate() + this.days_to_predict));
     },
     getDaysArray(s, e){
       for(var a=[], d=s; d<=e; d.setDate(d.getDate()+1)){

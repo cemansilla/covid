@@ -13,7 +13,10 @@ const routes = [
 
 export const router = new VueRouter({
   mode: 'history',
-  routes
+  routes,
+  base: process.env.NODE_ENV === 'production'
+    ? '/covid-19/'
+    : '/'
 })
 
 // Procesamiento de metatags
