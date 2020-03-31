@@ -67,7 +67,13 @@
           <b-img :src="require(`../assets/formulas/6_formula_factor_incremento.png`)" fluid alt="Fórmula factor de incremento diario para modelo"></b-img>
 
           <b-alert show variant="warning">
-            <p>Lo que resumí acá, pueden verlo perfectamente explicado en el video de <strong>El Traductor de Ingeniería</strong>: <a href="https://www.youtube.com/watch?v=-PUT0hZiZEw" target="_blank">Te Explico POR QUÉ estoy PREOCUPADO | [COVID-19]</a></p>  
+            <p>Lo que resumí acá, pueden verlo perfectamente explicado en el video de</p>
+            <p><strong>El Traductor de Ingeniería</strong>: <a href="https://www.youtube.com/watch?v=-PUT0hZiZEw" target="_blank">Te Explico POR QUÉ estoy PREOCUPADO | [COVID-19]</a></p>
+          </b-alert>
+
+          <b-alert show variant="success">
+            <p>Te dejo link a un Excel que podés usar para hacer tus propias predicciones, ya sea cambiando el set de datos o modificando el factor de incremento.</p>
+            <strong>Descarga:</strong> <a href="../assets/data/modelo_prediccion.xlsx" download>modelo_prediccion.xlsx</a>
           </b-alert>
         </b-col>
       </b-row>
