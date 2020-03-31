@@ -1,4 +1,4 @@
-<template>
+<template class="mb-5">
   <b-row>
     <b-col>
       <h2 class="my-3">Predicción Argentina a 5 días</h2>
@@ -7,6 +7,18 @@
           <b-alert show variant="warning">
             <p>Este modelo no contempla ni los casos recuperados ni las muertes. Apunta a predecir el crecimiento inicial de la pandemia.</p>  
           </b-alert>          
+        </b-col>
+      </b-row>
+      <b-row class="mt-3">
+        <b-col>
+          <line-chart
+            :chart-data="chartdata"
+            :options="options"/>
+        </b-col>
+      </b-row>      
+      <b-row>
+        <b-col>
+          <h2 class="my-3">Resúmen de casos confirmados</h2>
         </b-col>
       </b-row>
       <b-row>
@@ -25,13 +37,6 @@
           </b-card>
         </b-col>
         <b-col></b-col>
-      </b-row>
-      <b-row class="mt-3">
-        <b-col>
-          <line-chart
-            :chart-data="chartdata"
-            :options="options"/>
-        </b-col>
       </b-row>
       <b-row class="mt-3">
         <b-col>
